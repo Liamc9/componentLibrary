@@ -3,7 +3,7 @@ import { useState, useEffect } from 'react'
 
 // CREATE FUNCTION
 export default function ExampleComponent() {
-    // STATE VAIRABLES
+    // STATE VARIABLES
     const [state, setState] = useState(0)
 
     // JAVASCRIPT LOGIC
