@@ -8,22 +8,59 @@ export default function AppList() {
   // STATE VARIABLES
   const [apps, setApps] = useState([]);
   const [stack, setStack] = useState([]);
+  const [userData, setUserData] = useState([]);
 
   // FETCH EVERYTHING FROM A COLLECTION
   useEffect(() => {
     const fetchApps = async () => {
       const querySnapshot = await getDocs(collection(db, "appList"));
-      let fetchedApps = querySnapshot.docs.map((doc) => ({id: doc.id, ...doc.data(),}));
+      let fetchedApps = querySnapshot.docs.map((doc) => ({
+        id: doc.id,
+        ...doc.data(),
+      }));
       setApps(fetchedApps);
     };
     fetchApps();
   }, []);
 
+  // FETCH USERDATA FROM A COLLECTION
+  //import { getAuth, onAuthStateChanged } from "firebase/auth";
+  //const [userData, setUserData] = useState([]);
+  //const auth = getAuth();
+
+  useEffect(() => {
+    const fetchUserData = async () => {
+      const user = firebase.auth().currentUser;
+      if (user) {
+        try {
+          const querySnapshot = await getDocs(
+            collection(db, "users", user.uid)
+          );
+          let fetchedUserData = querySnapshot.docs.map((doc) => ({
+            id: doc.id,
+            ...doc.data(),
+          }));
+          setUserData(fetchedUserData);
+        } catch (error) {
+          console.error("Error fetching user data: ", error);
+        }
+      } else {
+        console.log("No user is signed in.");
+      }
+    };
+    fetchUserData();
+  }, []);
+
   // FETCH EVERYTHING FROM A SUBCOLLECTION
   useEffect(() => {
     const fetchStack = async () => {
-      const querySnapshot = await getDocs(collection(db, "appList", appId, "stackList"));
-      let fetchedStack = querySnapshot.docs.map((doc) => ({id: doc.id, ...doc.data(),}));
+      const querySnapshot = await getDocs(
+        collection(db, "appList", appId, "stackList")
+      );
+      let fetchedStack = querySnapshot.docs.map((doc) => ({
+        id: doc.id,
+        ...doc.data(),
+      }));
       setStack(fetchedStack);
     };
     fetchStack();
@@ -53,10 +90,20 @@ export default function AppList() {
           : [];
 
         for (const enquiry of userEnquiries) {
-          const enquiryDoc = await getDoc(doc(db,"Listings",enquiry.listingId,"enquiries",enquiry.enquiryId));
+          const enquiryDoc = await getDoc(
+            doc(
+              db,
+              "Listings",
+              enquiry.listingId,
+              "enquiries",
+              enquiry.enquiryId
+            )
+          );
 
           if (enquiryDoc.exists()) {
-            const listingDoc = await getDoc(doc(db, "Listings", enquiry.listingId));
+            const listingDoc = await getDoc(
+              doc(db, "Listings", enquiry.listingId)
+            );
 
             if (listingDoc.exists()) {
               const enquiryData = {
@@ -66,7 +113,16 @@ export default function AppList() {
                 listingData: listingDoc.data(),
               };
 
-              const messagesSnapshot = await getDocs(collection(db,"Listings",enquiry.listingId,"enquiries",enquiry.enquiryId,"messages"));
+              const messagesSnapshot = await getDocs(
+                collection(
+                  db,
+                  "Listings",
+                  enquiry.listingId,
+                  "enquiries",
+                  enquiry.enquiryId,
+                  "messages"
+                )
+              );
             }
           }
         }
@@ -79,8 +135,8 @@ export default function AppList() {
     fetchEnquiries();
   }, []);
 
-   // FETCH COLLECTION AND FOR EACH LISTING DOC IN THE COLLECTION GET A USER DOC RELATED TO A VALUE IN THE USER FIELD IN EACH LISTING DOC
-   useEffect(() => {
+  // FETCH COLLECTION AND FOR EACH LISTING DOC IN THE COLLECTION GET A USER DOC RELATED TO A VALUE IN THE USER FIELD IN EACH LISTING DOC
+  useEffect(() => {
     const fetchData = async () => {
       const querySnapshot = await getDocs(collection(db, "Listings"));
       let fetchedListings = querySnapshot.docs.map((doc) => ({
